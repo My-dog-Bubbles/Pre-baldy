@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pre-Calculus Challenge with Dinosaur Mini-Game</title>
+    <style>
+        /* Pre-Calculus Game Styles */
+        #game {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #healthBar {
+            width: 80%;
+            height: 30px;
+            background-color: #e0e0e0;
+            border: 2px solid #333;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px auto;
+        }
+
+        #health {
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.3s ease;
+        }
+
+        /* Red Overlay Styles */
+        #redOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0.4); /* Semi-transparent red */
+            pointer-events: none; /* Prevent user interaction */
+            z-index: 1000; /* Ensure it stays on top */
+            display: none; /* Hidden by default */
+        }
+
+        /* Shake Animation */
+        @keyframes shake {
+            0% { transform: translate(2px, 2px); }
+            20% { transform: translate(-2px, -2px); }
+            40% { transform: translate(2px, -2px); }
+            60% { transform: translate(-2px, 2px); }
+            80% { transform: translate(2px, 2px); }
+            100% { transform: translate(-2px, -2px); }
+        }
+
+        .shake {
+            animation: shake 0.5s ease-in-out infinite; /* Continuous shaking */
+        }
+
+ 
+        /* Dinosaur Mini-Game Styles */
+        #dinoGame {
+            display: none;
+            position: relative;
+            width: 600px;
+            height: 200px;
+            background-color: #f0f0f0;
+            margin: 50px auto;
+            border: 2px solid #333;
+            overflow: hidden;
+        }
+
+        #dino {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-color: green;
+            bottom: 20px;
+            left: 20px;
+        }
+
+        .obstacle {
+            position: absolute;
+            width: 20px;
+            height: 40px;
+            background-color: brown;
+            bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="game">
+        <h1>Pre-Calculus Challenge</h1>
+        <div id="question"></div>
+        <input type="text" id="answer" placeholder="Enter your answer">
+        <button onclick="checkAnswer()">Submit</button>
+        <div id="healthBar">
+            <div id="health"></div>
+        </div>
+        <p id="status"></p>
+    </div>
+    <div id="redOverlay"></div>
+
+    <!-- Dinosaur Mini-Game -->
+    <div id="dinoGame">
+        <div id="dino"></div>
+    </div>
+
+    <script>
+        // Pre-Calculus Game Variables
+        const questions = [
+            { question: "what is 1+1", answer:"2"},
+            { question: "what is 1+2", answer:"3"},
+            { question: "what is 1+3", answer:"4"},
+            { question: "what is 1+4", answer:"5"},
+            { question: "what is 1+5", answer:"6"},
+            { question: "what is 1+6", answer:"7"},
+            { question: "what is 1+7", answer:"8"},
+            { question: "what is 1+8", answer:"9"},
+            { question: "what is 1+9", answer:"10"},
+            { question: "what is 1+10", answer:"11"},
+            { question: "what is 1+11", answer:"12"},
+            { question: "what is 1+12", answer:"13"},
+            { question: "what is 1+13", answer:"14"},
+            { question: "Solve for x: 2x + 3 = 7", answer: "2" },
+            { question: "Find the derivative of f(x) = x^2", answer: "2x" },
+            { question: "What is the integral of 2x dx?", answer: "x^2 + C" },
+            { question: "What is the limit of (1/x) as x approaches infinity?", answer: "0" },
+            { question: "Simplify: sin^2(x) + cos^2(x)", answer: "1" }
+        ];
+        let currentQuestionIndex = 0;
+        let health = 100;
+        let correctAnswers = 0;
+        let dinoActive = false;
+
+        function displayQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                document.getElementById("question").innerText = questions[currentQuestionIndex].question;
+            } else {
+                document.getElementById("status").innerText = "Game over! You've answered all the questions.";
+                document.getElementById("question").innerText = "";
+                document.getElementById("answer").style.display = "none";
+                document.querySelector("button").style.display = "none";
+            }
+        }
+
+        function updateHealth() {
+            document.getElementById("health").style.width = health + "%";
+            if (health < 50 && !dinoActive) {
+                document.getElementById("redOverlay").style.display = "block";
+                document.body.classList.add("shake");
+            } else {
+                document.getElementById("redOverlay").style.display = "none";
+                document.body.classList.remove("shake");
+            }
+        }
+
+        function checkAnswer() {
+            const userAnswer = document.getElementById("answer").value;
+            if (userAnswer === questions[currentQuestionIndex].answer) {
+                document.getElementById("status").innerText = "Correct!";
+                correctAnswers++;
+                health +=7
+
+                // Trigger Dinosaur mini-game on a streak of 5 correct answers
+                if (correctAnswers % 5 === 0) {
+                    startDinoGame();
+                }
+            } else {
+                health -= 20;
+                document.getElementById("status").innerText = "Wrong answer! Health -20.";
+            }
+
+            updateHealth();
+
+            if (health <= 0) {
+                document.getElementById("status").innerText = "Game over! You've run out of health.";
+                document.getElementById("question").innerText = "";
+                document.getElementById("answer").style.display = "none";
+                document.querySelector("button").style.display = "none";
+            } else if (!dinoActive) {
+                currentQuestionIndex++;
+                displayQuestion();
+            }
+
+            document.getElementById("answer").value = "";
+        }
+
+        function startDinoGame() {
+    dinoActive = true;
+    document.getElementById("game").style.display = "none";
+    document.getElementById("dinoGame").style.display = "block";
+
+    const dinoGame = document.getElementById("dinoGame");
+    const dino = document.getElementById("dino");
+    let dinoBottom = 20;
+    let isJumping = false;
+
+    // Clear any leftover obstacles
+    const existingObstacles = document.querySelectorAll(".obstacle");
+    existingObstacles.forEach(obstacle => obstacle.remove());
+
+    // Jump logic
+    function jump() {
+        if (isJumping) return;
+        isJumping = true;
+        let upInterval = setInterval(() => {
+            if (dinoBottom >= 100) {
+                clearInterval(upInterval);
+                let downInterval = setInterval(() => {
+                    if (dinoBottom <= 20) {
+                        clearInterval(downInterval);
+                        isJumping = false;
+                    }
+                    dinoBottom -= 5;
+                    dino.style.bottom = dinoBottom + "px";
+                }, 20);
+            }
+            dinoBottom += 5;
+            dino.style.bottom = dinoBottom + "px";
+        }, 20);
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (e.code === "Space") jump();
+    });
+
+    // Create obstacles
+    function createObstacle() {
+        const obstacle = document.createElement("div");
+        obstacle.classList.add("obstacle");
+        obstacle.style.left = "600px";
+        dinoGame.appendChild(obstacle);
+
+        let obstacleInterval = setInterval(() => {
+            const obstacleLeft = parseInt(obstacle.style.left);
+
+            if (obstacleLeft <= 0) {
+                clearInterval(obstacleInterval);
+                obstacle.remove(); // Remove obstacle from the game
+            } else {
+                obstacle.style.left = obstacleLeft - 10 + "px";
+
+                // Collision detection
+                if (
+                    obstacleLeft > 20 && obstacleLeft < 60 && // Within dino's horizontal range
+                    dinoBottom <= 40 // Dino's height overlaps obstacle
+                ) {
+                    clearInterval(obstacleInterval);
+                    endDinoGame();
+                }
+            }
+        }, 30);
+    }
+
+    const obstacleInterval = setInterval(createObstacle, 2000);
+
+    // End game after 1 minute
+    setTimeout(() => {
+        clearInterval(obstacleInterval);
+        endDinoGame();
+    }, 60000); // 1 minute
+}
+
+
+        function endDinoGame() {
+            dinoActive = false;
+            document.getElementById("dinoGame").style.display = "none";
+            document.getElementById("game").style.display = "block";
+            displayQuestion();
+        }
+
+        // Add event listener to detect "Enter" keypress
+document.getElementById("answer").addEventListener("keyup", function (event) {
+    if (event.key === "Enter") {
+        checkAnswer(); // Trigger the same action as clicking "Submit"
+    }
+});
+
+        // Initialize the Game
+        updateHealth();
+        displayQuestion();
+    </script>
+</body>
+</html>
